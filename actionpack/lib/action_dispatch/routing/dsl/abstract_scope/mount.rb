@@ -88,7 +88,7 @@ module ActionDispatch
 
           def name_for_action(as, action) #:nodoc:
             prefix = prefix_name_for_action(as, action)
-            prefix = normalize_name(prefix) if prefix
+            prefix = self.class.normalize_name(prefix) if prefix
             name_prefix = self.as
 
             # if parent_resource

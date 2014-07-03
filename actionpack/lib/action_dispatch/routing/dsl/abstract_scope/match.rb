@@ -250,7 +250,7 @@ module ActionDispatch
 
         def action_path(name, path = nil) #:nodoc:
           name = name.to_sym if name.is_a?(String)
-          path || @scope[:path_names][name] || name.to_s
+          path || path_names[name] || name.to_s
         end
 
       end

@@ -89,8 +89,8 @@ module ActionDispatch
         #   scope as: "sekret" do
         #     resources :posts
         #   end
-        def scope(*args)
-          Scope.new(self, *args).instance_exec { yield }
+        def scope(*args, &block)
+          Scope.new(self, *args).instance_exec(&block)
           self
         end
 
@@ -99,9 +99,9 @@ module ActionDispatch
         #   controller "food" do
         #     match "bacon", action: "bacon"
         #   end
-        def controller(controller, options={})
+        def controller(controller, options={}, &block)
           options[:controller] = controller
-          scope(options) { yield }
+          scope(options, &block)
         end
 
         # Scopes routes to a specific namespace. For example:
@@ -142,7 +142,7 @@ module ActionDispatch
         #   namespace :admin, as: "sekret" do
         #     resources :posts
         #   end
-        def namespace(path, options = {})
+        def namespace(path, options = {}, &block)
           path = path.to_s
 
           defaults = {
@@ -153,7 +153,7 @@ module ActionDispatch
             shallow_prefix: options.fetch(:as, path)
           }
 
-          scope(defaults.merge!(options)) { yield }
+          scope(defaults.merge!(options), &block)
         end
 
         # === Parameter Restriction
@@ -211,8 +211,8 @@ module ActionDispatch
         #    constraints(Iphone) do
         #      resources :iphones
         #    end
-        def constraints(constraints = {})
-          scope(:constraints => constraints) { yield }
+        def constraints(constraints = {}, &block)
+          scope(:constraints => constraints, &block)
         end
 
         # Allows you to set default parameters for a route, such as this:
@@ -220,8 +220,8 @@ module ActionDispatch
         #     match 'scoped_pages/(:id)', to: 'pages#show'
         #   end
         # Using this, the +:id+ parameter here will default to 'home'.
-        def defaults(defaults = {})
-          scope(:defaults => defaults) { yield }
+        def defaults(defaults = {}, &block)
+          scope(:defaults => defaults, &block)
         end
       end
 

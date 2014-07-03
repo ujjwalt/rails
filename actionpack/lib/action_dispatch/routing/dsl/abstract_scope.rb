@@ -49,7 +49,7 @@ module ActionDispatch
             elsif option == :options
               value = options
             else
-              value = options.delete(option)
+              value = options.delete(option) { |option| {} if %w(defaults path_names constraints).include?(option.to_s) }
             end
 
             # Set instance variables
@@ -115,7 +115,7 @@ module ActionDispatch
 
         protected
           def merge_with_slash(parent, child)
-            normalize_path("#{parent}/#{child}")
+            self.class.normalize_path("#{parent}/#{child}")
           end
 
           def merge_with_underscore(parent, child)

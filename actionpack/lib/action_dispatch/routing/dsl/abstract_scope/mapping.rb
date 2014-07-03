@@ -1,3 +1,6 @@
+require 'action_dispatch/routing/redirection'
+require 'action_dispatch/routing/dsl/scope'
+
 module ActionDispatch
   module Routing
     class Constraints < Endpoint #:nodoc:
@@ -71,7 +74,7 @@ module ActionDispatch
         @to                 = options.delete :to
         @default_controller = options.delete(:controller) || scope.controller
         @default_action     = options.delete(:action) || scope.action
-        @as                 = options.delete :as
+        @as                 = options.delete(:as) || scope.as
         @anchor             = options.delete :anchor
 
         formatted = options.delete :format
@@ -117,7 +120,7 @@ module ActionDispatch
       private
 
         def normalize_path!(path, format)
-          path = Mapper.normalize_path(path)
+          path = DSL::Scope.normalize_path(path)
 
           if format == true
             "#{path}.:format"

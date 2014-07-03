@@ -2,6 +2,7 @@ require 'action_dispatch/routing/dsl/abstract_scope/normalization'
 require 'action_dispatch/routing/dsl/abstract_scope/mount'
 require 'action_dispatch/routing/dsl/abstract_scope/match'
 require 'action_dispatch/routing/dsl/abstract_scope/http_helpers'
+require 'action_dispatch/routing/dsl/abstract_scope/scoping'
 
 module ActionDispatch
   module Routing
@@ -16,7 +17,7 @@ module ActionDispatch
 
         # Accessors
         # =========
-        attr_accessor :set
+        attr_accessor :parent, :set, :concerns
         attr_reader :controller, :action
 
         def initialize(parent, *args)
@@ -77,7 +78,8 @@ module ActionDispatch
         end
 
         def module
-          parent ? "#{parent.module}/#{@module}" : @module
+          parent_module = parent ? parent.module : nil
+          parent_module ? "#{parent_module}/#{@module}" : @module
         end
 
         def path_names

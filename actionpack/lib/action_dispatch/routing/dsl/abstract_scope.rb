@@ -3,6 +3,7 @@ require 'action_dispatch/routing/dsl/abstract_scope/mount'
 require 'action_dispatch/routing/dsl/abstract_scope/match'
 require 'action_dispatch/routing/dsl/abstract_scope/http_helpers'
 require 'action_dispatch/routing/dsl/abstract_scope/scoping'
+require 'action_dispatch/routing/dsl/abstract_scope/concerns'
 
 module ActionDispatch
   module Routing
@@ -17,12 +18,12 @@ module ActionDispatch
 
         # Accessors
         # =========
-        attr_accessor :parent, :set, :concerns
-        attr_reader :controller, :action
+        attr_accessor :set
+        attr_reader :controller, :action, :parent
 
         def initialize(parent, *args)
           if parent
-            @parent, @set, @concerns = parent, parent.set, parent.concerns
+            @parent, @set, @concerns = parent, parent.set, parent.declared_concerns
           else
             @parent, @concerns = nil, {}
           end

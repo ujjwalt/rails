@@ -109,7 +109,7 @@ module ActionDispatch
           end
 
           def merge_hashes(parent, child)
-            (parent || {}).except(*override_keys(child)).merge!(child)
+            (parent || {}).except(*override_keys(child)).merge(child)
           end
 
           def override_keys(child) #:nodoc:

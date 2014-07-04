@@ -95,6 +95,7 @@ module ActionDispatch
         #     concerns :commentable
         #   end
         def concerns(*args)
+          return @concerns if args.empty?
           options = args.extract_options!
           args.flatten.each do |name|
             if concern = @concerns[name]
@@ -103,11 +104,6 @@ module ActionDispatch
               raise ArgumentError, "No concern named #{name} was found!"
             end
           end
-        end
-
-        # All declared concerns in this call to draw
-        def declared_concerns
-          @concerns
         end
       end
     end

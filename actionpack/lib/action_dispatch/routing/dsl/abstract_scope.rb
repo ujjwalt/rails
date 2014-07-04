@@ -19,11 +19,11 @@ module ActionDispatch
         # Accessors
         # =========
         attr_accessor :set
-        attr_reader :controller, :action, :parent
+        attr_reader :action, :parent
 
         def initialize(parent, *args)
           if parent
-            @parent, @set, @concerns = parent, parent.set, parent.declared_concerns
+            @parent, @set, @concerns = parent, parent.set, parent.concerns
           else
             @parent, @concerns = nil, {}
           end

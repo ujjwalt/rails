@@ -99,7 +99,8 @@ module ActionDispatch
         #   controller "food" do
         #     match "bacon", action: "bacon"
         #   end
-        def controller(controller, options={}, &block)
+        def controller(controller=nil, options={}, &block)
+          return @controller unless controller
           options[:controller] = controller
           scope(options, &block)
         end

@@ -1,9 +1,4 @@
-require 'action_dispatch/routing/dsl/abstract_scope/normalization'
-require 'action_dispatch/routing/dsl/abstract_scope/mount'
-require 'action_dispatch/routing/dsl/abstract_scope/match'
-require 'action_dispatch/routing/dsl/abstract_scope/http_helpers'
-require 'action_dispatch/routing/dsl/abstract_scope/scoping'
-require 'action_dispatch/routing/dsl/abstract_scope/concerns'
+require 'action_dispatch/routing/dsl/normalization'
 
 module ActionDispatch
   module Routing
@@ -88,11 +83,6 @@ module ActionDispatch
           merge_hashes(parent_path_names, @path_names)
         end
 
-        def constraints
-          parent_constraints = parent ? parent.constraints : nil
-          merge_hashes(parent_constraints, @constraints)
-        end
-
         def shallow?
           @shallow
         end
@@ -102,11 +92,6 @@ module ActionDispatch
           merged = parent_blocks ? parent_blocks.dup : []
           merged << @blocks if @blocks
           merged
-        end
-
-        def defaults
-          parent_defaults = parent ? parent.defaults : nil
-          merge_hashes(parent_defaults, @defaults)
         end
 
         def options
@@ -129,6 +114,16 @@ module ActionDispatch
 
           def override_keys(child) #:nodoc:
             child.key?(:only) || child.key?(:except) ? [:only, :except] : []
+          end
+
+          def _defaults
+            parent_defaults = parent ? parent.defaults : nil
+            merge_hashes(parent_defaults, @defaults)
+          end
+
+          def _constraints
+            parent_constraints = parent ? parent.constraints : nil
+            merge_hashes(parent_constraints, @constraints)
           end
       end
     end

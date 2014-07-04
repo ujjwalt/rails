@@ -1,9 +1,9 @@
-require 'action_dispatch/routing/dsl/abstract_scope/mapping'
+require 'action_dispatch/routing/dsl/scope/mapping'
 
 module ActionDispatch
   module Routing
     module DSL
-      class AbstractScope
+      class Scope < AbstractScope
         # Matches a url pattern to one or more routes.
         #
         # You should not use the `match` method in your router
@@ -241,7 +241,7 @@ module ActionDispatch
 
           mapping = Mapping.build(self, URI.parser.escape(path), options)
           app, conditions, requirements, defaults, as, anchor = mapping.to_route
-          @set.add_route(app, conditions, requirements, defaults, as, anchor)
+          set.add_route(app, conditions, requirements, defaults, as, anchor)
         end
 
         def path_for_action(action, path) #:nodoc:

@@ -1,7 +1,7 @@
 module ActionDispatch
   module Routing
     module DSL
-      class AbstractScope
+      class Scope < AbstractScope
         # Mount a Rack-based application to be used within the application.
         #
         #   mount SomeRackApp, at: "some_route"

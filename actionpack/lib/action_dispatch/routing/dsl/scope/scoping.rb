@@ -1,5 +1,3 @@
-require 'action_dispatch/routing/dsl/scope'
-
 # You may wish to organize groups of controllers under a namespace.
 # Most commonly, you might group a number of administrative controllers
 # under an +admin+ namespace. You would place these controllers under
@@ -58,7 +56,7 @@ require 'action_dispatch/routing/dsl/scope'
 module ActionDispatch
   module Routing
     module DSL
-      class AbstractScope
+      class Scope < AbstractScope
         # Scopes a set of routes to the given default options.
         #
         # Take the following route definition as an example:
@@ -212,8 +210,13 @@ module ActionDispatch
         #    constraints(Iphone) do
         #      resources :iphones
         #    end
-        def constraints(constraints = {}, &block)
-          scope(:constraints => constraints, &block)
+        def constraints(constraints = nil, &block)
+          if constraints.nil?
+            _constraints
+          else
+            constraints ||= {}
+            scope(:constraints => constraints, &block)
+          end
         end
 
         # Allows you to set default parameters for a route, such as this:
@@ -221,8 +224,13 @@ module ActionDispatch
         #     match 'scoped_pages/(:id)', to: 'pages#show'
         #   end
         # Using this, the +:id+ parameter here will default to 'home'.
-        def defaults(defaults = {}, &block)
-          scope(:defaults => defaults, &block)
+        def defaults(defaults = nil, &block)
+          if defaults.nil?
+            _defaults
+          else
+            defaults ||= {}
+            scope(:defaults => defaults, &block)
+          end
         end
       end
 

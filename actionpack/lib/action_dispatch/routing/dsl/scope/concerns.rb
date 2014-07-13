@@ -95,7 +95,7 @@ module ActionDispatch
         #     concerns :commentable
         #   end
         def concerns(*args)
-          return @concerns if args.empty?
+          return super() if args.empty?
           options = args.extract_options!
           args.flatten.each do |name|
             if concern = @concerns[name]

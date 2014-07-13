@@ -98,7 +98,7 @@ module ActionDispatch
         #     match "bacon", action: "bacon"
         #   end
         def controller(controller=nil, options={}, &block)
-          return @controller unless controller
+          return super() unless controller
           options[:controller] = controller
           scope(options, &block)
         end
@@ -211,12 +211,9 @@ module ActionDispatch
         #      resources :iphones
         #    end
         def constraints(constraints = nil, &block)
-          if constraints.nil?
-            _constraints
-          else
-            constraints ||= {}
-            scope(:constraints => constraints, &block)
-          end
+          return super() if constraints.nil?
+          constraints ||= {}
+          scope(:constraints => constraints, &block)
         end
 
         # Allows you to set default parameters for a route, such as this:
@@ -225,12 +222,9 @@ module ActionDispatch
         #   end
         # Using this, the +:id+ parameter here will default to 'home'.
         def defaults(defaults = nil, &block)
-          if defaults.nil?
-            _defaults
-          else
-            defaults ||= {}
-            scope(:defaults => defaults, &block)
-          end
+          return super() if defaults.nil?
+          defaults ||= {}
+          scope(:defaults => defaults, &block)
         end
       end
 

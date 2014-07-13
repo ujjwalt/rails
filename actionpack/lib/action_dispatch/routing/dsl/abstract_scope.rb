@@ -14,7 +14,7 @@ module ActionDispatch
         # Accessors
         # =========
         attr_accessor :set
-        attr_reader :action, :parent
+        attr_reader :controller, :action, :concerns, :parent
 
         def initialize(parent, *args)
           if parent
@@ -116,12 +116,12 @@ module ActionDispatch
             child.key?(:only) || child.key?(:except) ? [:only, :except] : []
           end
 
-          def _defaults
+          def defaults
             parent_defaults = parent ? parent.defaults : nil
             merge_hashes(parent_defaults, @defaults)
           end
 
-          def _constraints
+          def constraints
             parent_constraints = parent ? parent.constraints : nil
             merge_hashes(parent_constraints, @constraints)
           end

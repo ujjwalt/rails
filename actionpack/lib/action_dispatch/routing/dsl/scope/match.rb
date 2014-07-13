@@ -1,4 +1,5 @@
 require 'action_dispatch/routing/dsl/scope/mapping'
+require 'action_dispatch/routing/dsl/match_route'
 
 module ActionDispatch
   module Routing

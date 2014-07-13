@@ -159,54 +159,38 @@ module ActionDispatch
         # [:format]
         #   Allows you to specify the default value for optional +format+
         #   segment or disable it by supplying +false+.
-        def match(path, *rest)
-          if rest.empty? && Hash === path
-            options  = path
-            path, to = options.find { |name, _value| name.is_a?(String) }
-
-            case to
-            when Symbol
-              options[:action] = to
-            when String
-              if to =~ /#/
-                options[:to] = to
-              else
-                options[:controller] = to
-              end
-            else
-              options[:to] = to
-            end
-
-            options.delete(path)
-            paths = [path]
-          else
-            options = rest.pop || {}
-            paths = [path] + rest
+        def match(*args)
+          *paths, options = args # Zero or more paths and a hash of options
+          if paths.empty?
+            # If we used the match shorthand, set the path and options[:to]
+            paths[0], to = options.find { |name, _value| name.is_a?(String) }
+            options.delete(paths[0]) # Delete the path from the options hash
           end
 
-          options[:anchor] = true unless options.key?(:anchor)
+          # Process to and merge into options
+          process_option_to!(to, options)
 
-          if options[:on] && !VALID_ON_OPTIONS.include?(options[:on])
-            raise ArgumentError, "Unknown scope #{on.inspect} given to :on"
-          end
+          # Now iterate over each path and instantiate a MatchRoute object
+          # Instantiation of such an object also generates the route on the
+          # routing table
+          paths.each { |path| MatchRoute.new(self, path, options) }
 
-          if controller && action
-            options[:to] ||= "#{controller}##{action}"
-          end
-
-          paths.each do |_path|
-            route_options = options.dup
-            route_options[:path] ||= _path if _path.is_a?(String)
-
-            path_without_format = _path.to_s.sub(/\(\.:format\)$/, '')
-            if using_match_shorthand?(path_without_format, route_options)
-              route_options[:to] ||= path_without_format.gsub(%r{^/}, "").sub(%r{/([^/]*)$}, '#\1')
-              route_options[:to].tr!("-", "_")
-            end
-
-            decomposed_match(_path, route_options)
-          end
           self
+        end
+
+        def process_option_to!to, (options)
+          case to
+          when Symbol
+            options[:action] = to
+          when String
+            if to =~ /#/
+              options[:to] = to
+            else
+              options[:controller] = to
+            end
+          else
+            options[:to] = to
+          end
         end
 
         def using_match_shorthand?(path, options)

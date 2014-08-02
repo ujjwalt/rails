@@ -9,7 +9,7 @@ module ActionDispatch
         ROUTE_OPTIONS = [:anchor, :format, :to, :via]
 
         def initialize(*args)
-          options_path = (args.extract_options || {})[:path]
+          # options_path = args.extract_options[:path] || nil
           super # Let AbstractScope handle all stuff like setting ivar
           # Now handle route options
 
@@ -39,6 +39,9 @@ module ActionDispatch
           end
           # Change all '-' to '_' in the to
           @to.tr!('-', '_')
+
+          # Set @path from path names if available
+          @path = name if name = path_names[@path.to_sym]
         end
       end
     end

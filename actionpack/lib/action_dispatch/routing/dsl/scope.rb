@@ -5,6 +5,19 @@ module ActionDispatch
     module DSL
       class Scope
       	include AbstractScope
+
+        def method_missing(method, *args)
+          @count ||= 0
+          @count += 1
+          msg = "#{@count}) Missing :#{method}"
+          divider = "="*msg.length
+          puts divider, msg, divider
+        end
+
+        def default_url_options=(options)
+          @set.default_url_options = options
+        end
+        alias_method :default_url_options, :default_url_options=
       end
     end
   end

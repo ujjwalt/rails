@@ -1,5 +1,5 @@
 require 'action_dispatch/routing/dsl/scope/mapping'
-require 'action_dispatch/routing/dsl/match_route'
+# require 'action_dispatch/routing/dsl/match_route'
 
 module ActionDispatch
   module Routing
@@ -174,7 +174,10 @@ module ActionDispatch
           # Now iterate over each path and instantiate a MatchRoute object
           # Instantiation of such an object also generates the route on the
           # routing table
-          paths.each { |path| MatchRoute.new(self, path, options) }
+          paths.each do |path|
+            decomposed_match path, options
+            #MatchRoute.new(self, path, options)
+          end
 
           self
         end

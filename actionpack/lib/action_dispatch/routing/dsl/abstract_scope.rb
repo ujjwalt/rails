@@ -49,7 +49,7 @@ module ActionDispatch
             end
 
             # Set instance variables
-            instance_variable_set(:"@#{option}", value) if value
+            instance_variable_set(:"@#{option}", value || nil)
           end
         end
 

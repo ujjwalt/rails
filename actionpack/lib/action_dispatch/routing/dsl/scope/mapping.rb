@@ -1,5 +1,4 @@
 require 'action_dispatch/routing/redirection'
-require 'action_dispatch/routing/dsl/scope'
 
 module ActionDispatch
   module Routing
@@ -98,7 +97,7 @@ module ActionDispatch
         if options_constraints.is_a?(Hash)
           split_constraints path_params, options_constraints
           options_constraints.each do |key, default|
-            if URL_OPTIONS.include?(key) && (String === default || Fixnum === default)
+            if DSL::Scope::URL_OPTIONS.include?(key) && (String === default || Fixnum === default)
               @defaults[key] ||= default
             end
           end

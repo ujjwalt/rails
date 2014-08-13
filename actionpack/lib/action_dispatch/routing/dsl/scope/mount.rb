@@ -78,11 +78,7 @@ module ActionDispatch
           end
 
           def prefix_name_for_action(as, action) #:nodoc:
-            if as
-              prefix = as
-            # elsif !canonical_action?(action, @scope[:scope_level])
-            #   prefix = action
-            end
+            prefix = as || action
             prefix.to_s.tr('-', '_') if prefix
           end
 

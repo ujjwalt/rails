@@ -171,12 +171,13 @@ module ActionDispatch
             process_option_to!(to, options)
           end
 
+          options[:anchor] = true unless options.key?(:anchor)
+
           # Now iterate over each path and instantiate a MatchRoute object
           # Instantiation of such an object also generates the route on the
           # routing table
           paths.each do |path|
-            decomposed_match path, options
-            #MatchRoute.new(self, path, options)
+            add_route(path, options)
           end
 
           self
@@ -228,14 +229,6 @@ module ActionDispatch
           path && (options[:to] || options[:action]).nil? && path =~ %r{/[\w/]+$}
         end
 
-        def decomposed_match(path, options) # :nodoc:
-          if on = options.delete(:on)
-            send(on) { decomposed_match(path, options) }
-          else
-            add_route(path, options)
-          end
-        end
-
         def add_route(action, options) # :nodoc:
           path = path_for_action(action, options.delete(:path))
           raise ArgumentError, "path is required" if path.blank?
@@ -253,7 +246,7 @@ module ActionDispatch
           else
             options[:as] = name_for_action(options[:as], action)
           end
-
+          
           mapping = Mapping.build(self, URI.parser.escape(path), options)
           app, conditions, requirements, defaults, as, anchor = mapping.to_route
           set.add_route(app, conditions, requirements, defaults, as, anchor)

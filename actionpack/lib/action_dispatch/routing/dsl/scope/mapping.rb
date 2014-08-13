@@ -83,7 +83,6 @@ module ActionDispatch
         path = normalize_path! path, formatted
         ast  = path_ast path
         path_params = path_params ast
-
         options = normalize_options!(options, formatted, path_params, ast, scope.module)
 
 

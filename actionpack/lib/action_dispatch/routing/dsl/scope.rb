@@ -1,10 +1,12 @@
 require 'action_dispatch/routing/dsl/abstract_scope'
+require 'action_dispatch/routing/redirection'
 
 module ActionDispatch
   module Routing
     module DSL
       class Scope
       	include AbstractScope
+        include Redirection
 
         def method_missing(method, *args)
           @count ||= 0

@@ -166,10 +166,10 @@ module ActionDispatch
             # If we used the match shorthand, set the path and options[:to]
             paths[0], to = options.find { |name, _value| name.is_a?(String) }
             options.delete(paths[0]) # Delete the path from the options hash
-          end
 
-          # Process to and merge into options
-          process_option_to!(to, options)
+            # Process to and merge into options
+            process_option_to!(to, options)
+          end
 
           # Now iterate over each path and instantiate a MatchRoute object
           # Instantiation of such an object also generates the route on the
@@ -182,7 +182,34 @@ module ActionDispatch
           self
         end
 
-        def process_option_to!to, (options)
+        # You can specify what Rails should route "/" to with the root method:
+        #
+        #   root to: 'pages#main'
+        #
+        # For options, see +match+, as +root+ uses it internally.
+        #
+        # You can also pass a string which will expand
+        #
+        #   root 'pages#main'
+        #
+        # You should put the root route at the top of <tt>config/routes.rb</tt>,
+        # because this means it will be matched first. As this is the most popular route
+        # of most Rails applications, this is beneficial.
+        def root(path, options={})
+          if path.is_a?(String)
+            options[:to] = path
+          elsif path.is_a?(Hash) and options.empty?
+            options = path
+          else
+            raise ArgumentError, "must be called with a path and/or options"
+          end
+
+          match '/', { :as => :root, :via => :get }.merge!(options)
+        end
+
+        protected
+
+        def process_option_to!(to, options)
           case to
           when Symbol
             options[:action] = to

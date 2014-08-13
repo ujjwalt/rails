@@ -3,7 +3,7 @@ require 'action_dispatch/journey'
 module ActionDispatch
   module Routing
     module DSL
-      class AbstractScope
+      module AbstractScope
         # Invokes Journey::Router::Utils.normalize_path and ensure that
         # (:locale) becomes (/:locale) instead of /(:locale). Except
         # for root cases, where the latter is the correct one.

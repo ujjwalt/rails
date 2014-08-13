@@ -1,7 +1,7 @@
 module ActionDispatch
   module Routing
     module DSL
-      class Scope < AbstractScope
+      class Scope
         # Define a route that only recognizes HTTP GET.
         # For supported arguments, see match[rdoc-ref:Base#match]
         #

@@ -56,7 +56,7 @@
 module ActionDispatch
   module Routing
     module DSL
-      class Scope < AbstractScope
+      class Scope
         # Scopes a set of routes to the given default options.
         #
         # Take the following route definition as an example:

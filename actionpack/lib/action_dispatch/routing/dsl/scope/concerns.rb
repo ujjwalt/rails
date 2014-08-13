@@ -21,7 +21,7 @@
 module ActionDispatch
   module Routing
     module DSL
-      class Scope < AbstractScope
+      class Scope
         # Define a routing concern using a name.
         #
         # Concerns may be defined inline, using a block, or handled by

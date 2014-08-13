@@ -1,11 +1,12 @@
 # MatchRoute is a special scope in the sense that it has some additonal options
 # like :anchor, :to, :via and :format that are specific to routes
-require 'action_dispatch/routing/dsl/scope'
+require 'action_dispatch/routing/dsl/abstract_scope'
 
 module ActionDispatch
   module Routing
     module DSL
-      class MatchRoute < Scope
+      class MatchRoute
+        include AbstractScope
         ROUTE_OPTIONS = [:anchor, :format, :to, :via]
 
         def initialize(*args)
@@ -38,7 +39,7 @@ module ActionDispatch
             end
           end
           # Change all '-' to '_' in the to
-          @to.tr!('-', '_')
+          @to.tr!('-', '_') if @to.is_a? String
 
           # Set @path from path names if available
           @path = name if name = path_names[@path.to_sym]

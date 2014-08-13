@@ -4,7 +4,7 @@ require 'action_dispatch/routing/dsl/match_route'
 module ActionDispatch
   module Routing
     module DSL
-      class Scope < AbstractScope
+      class Scope
         # Matches a url pattern to one or more routes.
         #
         # You should not use the `match` method in your router

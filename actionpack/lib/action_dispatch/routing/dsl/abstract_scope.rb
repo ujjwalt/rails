@@ -3,7 +3,7 @@ require 'action_dispatch/routing/dsl/normalization'
 module ActionDispatch
   module Routing
     module DSL
-      class AbstractScope
+      module AbstractScope
         # Constants
         # =========
         URL_OPTIONS = [:protocol, :subdomain, :domain, :host, :port]
@@ -45,7 +45,7 @@ module ActionDispatch
             elsif option == :options
               value = options
             else
-              value = options.delete(option) { |option| {} if %w(defaults path_names constraints).include?(option.to_s) }
+              value = options.delete(option) { |_option| {} if %w(defaults path_names constraints).include?(_option.to_s) }
             end
 
             # Set instance variables

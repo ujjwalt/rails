@@ -173,11 +173,24 @@ module ActionDispatch
 
           options[:anchor] = true unless options.key?(:anchor)
 
+          if controller && action
+            options[:to] ||= "#{controller}##{action}"
+          end
+
           # Now iterate over each path and instantiate a MatchRoute object
           # Instantiation of such an object also generates the route on the
           # routing table
           paths.each do |path|
-            add_route(path, options)
+            route_options = options.dup
+            route_options[:path] ||= path if path.is_a?(String)
+
+            path_without_format = path.to_s.sub(/\(\.:format\)$/, '')
+            if using_match_shorthand?(path_without_format, route_options)
+              route_options[:to] ||= path_without_format.gsub(%r{^/}, "").sub(%r{/([^/]*)$}, '#\1')
+              route_options[:to].tr!("-", "_")
+            end
+
+            add_route(path, route_options)
           end
 
           self
@@ -246,7 +259,7 @@ module ActionDispatch
           else
             options[:as] = name_for_action(options[:as], action)
           end
-          
+
           mapping = Mapping.build(self, URI.parser.escape(path), options)
           app, conditions, requirements, defaults, as, anchor = mapping.to_route
           set.add_route(app, conditions, requirements, defaults, as, anchor)

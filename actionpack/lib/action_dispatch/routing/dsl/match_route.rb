@@ -42,8 +42,32 @@ module ActionDispatch
           @to.tr!('-', '_') if @to.is_a? String
 
           # Set @path from path names if available
-          @path = name if name = path_names[@path.to_sym]
+          @path = path_names[@path.to_sym] || @path
+
+          # If we still can't set a path then there is something wrong
+          raise ArgumentError, "path is required" if @path.blank?
+
+          add_to_router          
         end
+
+        protected
+          def add_to_router
+            build
+            setup
+            add_route
+          end
+
+          def build
+            # 
+          end
+
+          def setup
+            #
+          end
+
+          def add_route
+            #
+          end
       end
     end
   end

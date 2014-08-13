@@ -20,6 +20,11 @@ module ActionDispatch
           @set.default_url_options = options
         end
         alias_method :default_url_options, :default_url_options=
+
+        # Query if the following named route was already defined.
+        def has_named_route?(name)
+          @set.named_routes.routes[name.to_sym]
+        end
       end
     end
   end

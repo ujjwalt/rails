@@ -75,6 +75,7 @@ module ActionDispatch
         @default_action     = options.delete(:action) || scope.action
         @as                 = options.delete(:as) || scope.as
         @anchor             = options.delete :anchor
+        @set                = scope.set
 
         formatted = options.delete :format
         via = Array(options.delete(:via) { [] })
@@ -83,6 +84,7 @@ module ActionDispatch
         path = normalize_path! path, formatted
         ast  = path_ast path
         path_params = path_params ast
+        
         options = normalize_options!(options, formatted, path_params, ast, scope.module)
 
 
@@ -236,7 +238,7 @@ module ActionDispatch
             if blocks.any?
               Constraints.new(dispatcher, blocks, true)
             else
-              dispatcher
+              dispatcher(defaults)
             end
           end
         end
@@ -333,8 +335,8 @@ module ActionDispatch
           parser.parse path
         end
 
-        def dispatcher
-          Routing::RouteSet::Dispatcher.new(defaults)
+        def dispatcher(defaults)
+          @set.dispatcher defaults
         end
     end
   end

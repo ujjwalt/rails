@@ -74,8 +74,15 @@ module ActionDispatch
         end
 
         def module
-          parent_module = parent ? parent.module : nil
-          parent_module ? "#{parent_module}/#{@module}" : @module
+          if parent && parent.module
+            if @module
+              "#{parent.module}/#{@module}"
+            else
+              parent.module
+            end
+          else
+            @module
+          end
         end
 
         def path_names

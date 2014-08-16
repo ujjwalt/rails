@@ -2,6 +2,7 @@
 require 'erb'
 require 'abstract_unit'
 require 'controller/fake_controllers'
+require "byebug"
 
 class TestRoutingMapper < ActionDispatch::IntegrationTest
   SprocketsApp = lambda { |env|
@@ -142,6 +143,18 @@ class TestRoutingMapper < ActionDispatch::IntegrationTest
     assert_equal 'sessions#reset', @response.body
     assert_equal '/session/reset', reset_session_path
   end
+
+  # def test_session_info_nested_singleton_resource
+  #   draw do
+  #     resource :session do
+  #       resource :info
+  #     end
+  #   end
+
+  #   get '/session/info'
+  #   assert_equal 'infos#show', @response.body
+  #   assert_equal '/session/info', session_info_path
+  # end
 
   private
 

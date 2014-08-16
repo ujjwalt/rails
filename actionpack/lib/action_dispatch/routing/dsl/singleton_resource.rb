@@ -15,17 +15,33 @@ module ActionDispatch
         end
 
         def name
-          as || @name
+          @as || @name
         end
 
         def draw
           post '/', action: :create, as: name
-          get '/new', action: :new, as: "new_#{name}"
-          get '/edit', action: :edit, as: "edit_#{name}"
+          get '/new', action: :new
+          get '/edit', action: :edit
           get '/', action: :show
           patch '/', action: :update
           put '/', action: :update
           delete '/', action: :destroy
+        end
+
+        def path_for_action(action, path) #:nodoc:
+          if canonical_action?(action, path.blank?)
+            self.path.to_s
+          else
+            super
+          end
+        end
+
+        def canonical_action?(action, flag) #:nodoc:
+          flag && CANONICAL_ACTIONS.include?(action.to_s)
+        end
+
+        def prefixed_name(name_prefix, prefix)
+          [prefix, name]
         end
       end
     end

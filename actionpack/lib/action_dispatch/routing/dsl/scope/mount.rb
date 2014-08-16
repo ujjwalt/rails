@@ -109,7 +109,7 @@ module ActionDispatch
             #   [name_prefix, member_name, prefix]
             # end
 
-            name = [name_prefix, prefix]
+            name = prefixed_name name_prefix, prefix
 
             if candidate = name.select(&:present?).join("_").presence
               # If a name was not explicitly given, we check if it is valid
@@ -121,6 +121,10 @@ module ActionDispatch
                 candidate
               end
             end
+          end
+
+          def prefixed_name(name_prefix, prefix)
+            [name_prefix, prefix]
           end
       end
     end

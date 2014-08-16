@@ -190,10 +190,14 @@ module ActionDispatch
               route_options[:to].tr!("-", "_")
             end
 
-            add_route(path, route_options)
+            decomposed_match(path, route_options)
           end
 
           self
+        end
+
+        def decomposed_match(path, options) # :nodoc:
+          add_route(path, options)
         end
 
         # You can specify what Rails should route "/" to with the root method:

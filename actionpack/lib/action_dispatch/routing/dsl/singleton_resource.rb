@@ -11,7 +11,7 @@ module ActionDispatch
           super
           @name       = resource.to_s
           @path       = (@path || @name).to_s
-          @controller = (@controller || @name).pluralize.to_s
+          @controller = (@controller || @name.to_s.pluralize).to_s
         end
 
         def name
@@ -50,6 +50,19 @@ module ActionDispatch
 
         def member
           yield
+        end
+
+        def decomposed_match(path, options) # :nodoc:
+          if on = options.delete(:on)
+            send(on) { decomposed_match(path, options) }
+          else
+            member { add_route(path, options) }
+          end
+        end
+
+        def name_for_action(as, action) #:nodoc:
+          return nil unless as || action
+          super
         end
       end
     end

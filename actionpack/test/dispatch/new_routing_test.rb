@@ -423,6 +423,69 @@ class TestRoutingMapper < ActionDispatch::IntegrationTest
     assert_equal '/projects', controller
   end
 
+  # tests the arguments modification free version of define_hash_access
+  def test_named_route_with_no_side_effects
+    draw do
+      resources :customers do
+        get "profile", :on => :member
+      end
+    end
+
+    original_options = { :host => 'test.host' }
+    options = original_options.dup
+
+    profile_customer_url("customer_model", options)
+
+    # verify that the options passed in have not changed from the original ones
+    assert_equal original_options, options
+  end
+
+  def test_projects_status
+    draw do
+      get "/projects/status(.:format)"
+    end
+
+    assert_equal '/projects/status', url_for(:controller => 'projects', :action => 'status', :only_path => true)
+    assert_equal '/projects/status.json', url_for(:controller => 'projects', :action => 'status', :format => 'json', :only_path => true)
+  end
+
+  def test_projects
+    draw do
+      resources :projects, :controller => :project
+    end
+
+    get '/projects'
+    assert_equal 'project#index', @response.body
+    assert_equal '/projects', projects_path
+
+    post '/projects'
+    assert_equal 'project#create', @response.body
+
+    get '/projects.xml'
+    assert_equal 'project#index', @response.body
+    assert_equal '/projects.xml', projects_path(:format => 'xml')
+
+    get '/projects/new'
+    assert_equal 'project#new', @response.body
+    assert_equal '/projects/new', new_project_path
+
+    get '/projects/new.xml'
+    assert_equal 'project#new', @response.body
+    assert_equal '/projects/new.xml', new_project_path(:format => 'xml')
+
+    get '/projects/1'
+    assert_equal 'project#show', @response.body
+    assert_equal '/projects/1', project_path(:id => '1')
+
+    get '/projects/1.xml'
+    assert_equal 'project#show', @response.body
+    assert_equal '/projects/1.xml', project_path(:id => '1', :format => 'xml')
+
+    get '/projects/1/edit'
+    assert_equal 'project#edit', @response.body
+    assert_equal '/projects/1/edit', edit_project_path(:id => '1')
+  end
+
   private
 
   def draw(&block)

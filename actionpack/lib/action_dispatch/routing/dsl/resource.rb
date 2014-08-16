@@ -1,31 +1,58 @@
+require "action_dispatch/routing/dsl/singleton_resource"
+
 module ActionDispatch
   module Routing
     module DSL
-      class Resource < Scope
-        # CANONICAL_ACTIONS holds all actions that does not need a prefix or
-        # a path appended since they fit properly in their scope level.
-        VALID_ON_OPTIONS  = [:new, :collection, :member]
-        RESOURCE_OPTIONS  = [:as, :controller, :path, :only, :except, :param, :concerns]
-        CANONICAL_ACTIONS = %w(index create new show update destroy)
-
+      class Resource < SingletonResource
         attr_reader :param
 
         def initialize(parent, resource, options)
           super
-          @name = resource.to_s
-          @path       = (options[:path] || @name).to_s
-          @controller = (options[:controller] || @name).to_s
           @param      = (options[:param] || :id).to_sym
-
-          declare_resourceful_routes
+          @path = @path.pluralize
+          @name = @name.singularize
         end
 
-        def name
-          @path
+        def draw
+          get '/', action: :index
+          post '/', action: :create
+          get '/new', action: :new
+          get '/edit', action: :edit
+          get "/:#{@param}", action: :show
+          patch "/:#{@param}", action: :update
+          put "/:#{@param}", action: :update
+          delete "/:#{@param}", action: :destroy
         end
 
-        def declare_resourceful_routes
-          
+        def member
+          param = ":#{name.singularize}_#{@param}"
+          @path, old_path = "/#{@path}/#{param}", @path
+          yield
+          @path = old_path
+        end
+
+        def decomposed_match(path, options) # :nodoc:
+          if on = options.delete(:on)
+            send(on) { decomposed_match(path, options) }
+          else
+            add_route(path, options)
+          end
+        end
+
+        def prefixed_name(name_prefix, prefix)
+          if @parent.class != Scope
+            [prefix, @parent.name, name]
+          else
+            if prefix.blank?
+              if has_named_route?(name.pluralize)
+                [name]
+              else
+                [name.pluralize]
+              end
+            else
+              [prefix, name]
+            end
+          end
         end
       end
     end

@@ -335,7 +335,7 @@ module ActionDispatch
           parser.parse path
         end
 
-        def dispatcher(defaults)
+        def dispatcher(defaults={})
           @set.dispatcher defaults
         end
     end

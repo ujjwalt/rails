@@ -19,7 +19,7 @@ module ActionDispatch
         end
 
         def draw
-          post '/', action: :create, as: name
+          post '/', action: :create
           get '/new', action: :new
           get '/edit', action: :edit
           get '/', action: :show
@@ -41,7 +41,15 @@ module ActionDispatch
         end
 
         def prefixed_name(name_prefix, prefix)
-          [prefix, name]
+          if @parent.class != Scope
+            [prefix, @parent.name, name]
+          else
+            [prefix, name]
+          end
+        end
+
+        def member
+          yield
         end
       end
     end

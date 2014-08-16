@@ -144,17 +144,284 @@ class TestRoutingMapper < ActionDispatch::IntegrationTest
     assert_equal '/session/reset', reset_session_path
   end
 
-  # def test_session_info_nested_singleton_resource
-  #   draw do
-  #     resource :session do
-  #       resource :info
-  #     end
-  #   end
+  def test_session_info_nested_singleton_resource
+    draw do
+      resource :session do
+        resource :info
+      end
+    end
 
-  #   get '/session/info'
-  #   assert_equal 'infos#show', @response.body
-  #   assert_equal '/session/info', session_info_path
-  # end
+    get '/session/info'
+    assert_equal 'infos#show', @response.body
+    assert_equal '/session/info', session_info_path
+  end
+
+  def test_member_on_resource
+    draw do
+      resource :session do
+        member do
+          get :crush
+        end
+      end
+    end
+
+    get '/session/crush'
+    assert_equal 'sessions#crush', @response.body
+    assert_equal '/session/crush', crush_session_path
+  end
+
+  def test_redirect_modulo
+    draw do
+      get 'account/modulo/:name', :to => redirect("/%{name}s")
+    end
+
+    get '/account/modulo/name'
+    verify_redirect 'http://www.example.com/names'
+  end
+
+  def test_redirect_proc
+    draw do
+      get 'account/proc/:name', :to => redirect {|params, req| "/#{params[:name].pluralize}" }
+    end
+
+    get '/account/proc/person'
+    verify_redirect 'http://www.example.com/people'
+  end
+
+  def test_redirect_proc_with_request
+    draw do
+      get 'account/proc_req' => redirect {|params, req| "/#{req.method}" }
+    end
+
+    get '/account/proc_req'
+    verify_redirect 'http://www.example.com/GET'
+  end
+
+  def test_redirect_hash_with_subdomain
+    draw do
+      get 'mobile', :to => redirect(:subdomain => 'mobile')
+    end
+
+    get '/mobile'
+    verify_redirect 'http://mobile.example.com/mobile'
+  end
+
+  def test_redirect_hash_with_domain_and_path
+    draw do
+      get 'documentation', :to => redirect(:domain => 'example-documentation.com', :path => '')
+    end
+
+    get '/documentation'
+    verify_redirect 'http://www.example-documentation.com'
+  end
+
+  def test_redirect_hash_with_path
+    draw do
+      get 'new_documentation', :to => redirect(:path => '/documentation/new')
+    end
+
+    get '/new_documentation'
+    verify_redirect 'http://www.example.com/documentation/new'
+  end
+
+  def test_redirect_hash_with_host
+    draw do
+      get 'super_new_documentation', :to => redirect(:host => 'super-docs.com')
+    end
+
+    get '/super_new_documentation?section=top'
+    verify_redirect 'http://super-docs.com/super_new_documentation?section=top'
+  end
+
+  def test_redirect_hash_path_substitution
+    draw do
+      get 'stores/:name', :to => redirect(:subdomain => 'stores', :path => '/%{name}')
+    end
+
+    get '/stores/iernest'
+    verify_redirect 'http://stores.example.com/iernest'
+  end
+
+  def test_redirect_hash_path_substitution_with_catch_all
+    draw do
+      get 'stores/:name(*rest)', :to => redirect(:subdomain => 'stores', :path => '/%{name}%{rest}')
+    end
+
+    get '/stores/iernest/products'
+    verify_redirect 'http://stores.example.com/iernest/products'
+  end
+
+  def test_redirect_class
+    draw do
+      get 'youtube_favorites/:youtube_id/:name', :to => redirect(YoutubeFavoritesRedirector)
+    end
+
+    get '/youtube_favorites/oHg5SJYRHA0/rick-rolld'
+    verify_redirect 'http://www.youtube.com/watch?v=oHg5SJYRHA0'
+  end
+
+  def test_openid
+    draw do
+      match 'openid/login', :via => [:get, :post], :to => "openid#login"
+    end
+
+    get '/openid/login'
+    assert_equal 'openid#login', @response.body
+
+    post '/openid/login'
+    assert_equal 'openid#login', @response.body
+  end
+
+  def test_bookmarks
+    draw do
+      scope "bookmark", :controller => "bookmarks", :as => :bookmark do
+        get  :new, :path => "build"
+        post :create, :path => "create", :as => ""
+        put  :update
+        get  :remove, :action => :destroy, :as => :remove
+      end
+    end
+
+    get '/bookmark/build'
+    assert_equal 'bookmarks#new', @response.body
+    assert_equal '/bookmark/build', bookmark_new_path
+
+    post '/bookmark/create'
+    assert_equal 'bookmarks#create', @response.body
+    assert_equal '/bookmark/create', bookmark_path
+
+    put '/bookmark/update'
+    assert_equal 'bookmarks#update', @response.body
+    assert_equal '/bookmark/update', bookmark_update_path
+
+    get '/bookmark/remove'
+    assert_equal 'bookmarks#destroy', @response.body
+    assert_equal '/bookmark/remove', bookmark_remove_path
+  end
+
+  def test_pagemarks
+    draw do
+      scope "pagemark", :controller => "pagemarks", :as => :pagemark do
+        get  "new", :path => "build"
+        post "create", :as => ""
+        put  "update"
+        get  "remove", :action => :destroy, :as => :remove
+      end
+    end
+
+    get '/pagemark/build'
+    assert_equal 'pagemarks#new', @response.body
+    assert_equal '/pagemark/build', pagemark_new_path
+
+    post '/pagemark/create'
+    assert_equal 'pagemarks#create', @response.body
+    assert_equal '/pagemark/create', pagemark_path
+
+    put '/pagemark/update'
+    assert_equal 'pagemarks#update', @response.body
+    assert_equal '/pagemark/update', pagemark_update_path
+
+    get '/pagemark/remove'
+    assert_equal 'pagemarks#destroy', @response.body
+    assert_equal '/pagemark/remove', pagemark_remove_path
+  end
+
+  def test_admin
+    draw do
+      constraints(:ip => /192\.168\.1\.\d\d\d/) do
+        get 'admin' => "queenbee#index"
+      end
+
+      constraints ::TestRoutingMapper::IpRestrictor do
+        get 'admin/accounts' => "queenbee#accounts"
+      end
+
+      get 'admin/passwords' => "queenbee#passwords", :constraints => ::TestRoutingMapper::IpRestrictor
+    end
+
+    get '/admin', {}, {'REMOTE_ADDR' => '192.168.1.100'}
+    assert_equal 'queenbee#index', @response.body
+
+    get '/admin', {}, {'REMOTE_ADDR' => '10.0.0.100'}
+    assert_equal 'pass', @response.headers['X-Cascade']
+
+    get '/admin/accounts', {}, {'REMOTE_ADDR' => '192.168.1.100'}
+    assert_equal 'queenbee#accounts', @response.body
+
+    get '/admin/accounts', {}, {'REMOTE_ADDR' => '10.0.0.100'}
+    assert_equal 'pass', @response.headers['X-Cascade']
+
+    get '/admin/passwords', {}, {'REMOTE_ADDR' => '192.168.1.100'}
+    assert_equal 'queenbee#passwords', @response.body
+
+    get '/admin/passwords', {}, {'REMOTE_ADDR' => '10.0.0.100'}
+    assert_equal 'pass', @response.headers['X-Cascade']
+  end
+
+  def test_global
+    draw do
+      controller(:global) do
+        get 'global/hide_notice'
+        get 'global/export',      :action => :export, :as => :export_request
+        get '/export/:id/:file',  :action => :export, :as => :export_download, :constraints => { :file => /.*/ }
+        get 'global/:action'
+      end
+    end
+
+    get '/global/dashboard'
+    assert_equal 'global#dashboard', @response.body
+
+    get '/global/export'
+    assert_equal 'global#export', @response.body
+
+    get '/global/hide_notice'
+    assert_equal 'global#hide_notice', @response.body
+
+    get '/export/123/foo.txt'
+    assert_equal 'global#export', @response.body
+
+    assert_equal '/global/export', export_request_path
+    assert_equal '/global/hide_notice', global_hide_notice_path
+    assert_equal '/export/123/foo.txt', export_download_path(:id => 123, :file => 'foo.txt')
+  end
+
+  def test_local
+    draw do
+      get "/local/:action", :controller => "local"
+    end
+
+    get '/local/dashboard'
+    assert_equal 'local#dashboard', @response.body
+  end
+
+  # tests the use of dup in url_for
+  def test_url_for_with_no_side_effects
+    draw do
+      get "/projects/status(.:format)"
+    end
+
+    # without dup, additional (and possibly unwanted) values will be present in the options (eg. :host)
+    original_options = {:controller => 'projects', :action => 'status'}
+    options = original_options.dup
+
+    url_for options
+
+    # verify that the options passed in have not changed from the original ones
+    assert_equal original_options, options
+  end
+
+  def test_url_for_does_not_modify_controller
+    draw do
+      get "/projects/status(.:format)"
+    end
+
+    controller = '/projects'
+    options = {:controller => controller, :action => 'status', :only_path => true}
+    url = url_for(options)
+
+    assert_equal '/projects/status', url
+    assert_equal '/projects', controller
+  end
 
   private
 

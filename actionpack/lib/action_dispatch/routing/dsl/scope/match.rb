@@ -1,5 +1,4 @@
 require 'action_dispatch/routing/dsl/scope/mapping'
-# require 'action_dispatch/routing/dsl/match_route'
 
 module ActionDispatch
   module Routing
@@ -171,11 +170,7 @@ module ActionDispatch
             process_option_to!(to, options)
           end
 
-          options[:anchor] = true unless options.key?(:anchor)
-
-          if controller && action
-            options[:to] ||= "#{controller}##{action}"
-          end
+          process_options(options)
 
           # Now iterate over each path and instantiate a MatchRoute object
           # Instantiation of such an object also generates the route on the
@@ -239,6 +234,14 @@ module ActionDispatch
             end
           else
             options[:to] = to
+          end
+        end
+
+        def process_options(options)
+          options[:anchor] = true unless options.key?(:anchor)
+
+          if controller && action
+            options[:to] ||= "#{controller}##{action}"
           end
         end
 

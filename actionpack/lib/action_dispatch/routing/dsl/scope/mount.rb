@@ -87,29 +87,7 @@ module ActionDispatch
             prefix = self.class.normalize_name(prefix) if prefix
             name_prefix = self.as
 
-            # if parent_resource
-            #   return nil unless as || action
-
-            #   collection_name = parent_resource.collection_name
-            #   member_name = parent_resource.member_name
-            # end
-
-            # name = case @scope[:scope_level]
-            # when :nested
-            #   [name_prefix, prefix]
-            # when :collection
-            #   [prefix, name_prefix, collection_name]
-            # when :new
-            #   [prefix, :new, name_prefix, member_name]
-            # when :member
-            #   [prefix, name_prefix, member_name]
-            # when :root
-            #   [name_prefix, collection_name, prefix]
-            # else
-            #   [name_prefix, member_name, prefix]
-            # end
-
-            name = prefixed_name name_prefix, prefix
+            name = prefixed_name(prefix, name_prefix)
 
             if candidate = name.select(&:present?).join("_").presence
               # If a name was not explicitly given, we check if it is valid
@@ -123,7 +101,7 @@ module ActionDispatch
             end
           end
 
-          def prefixed_name(name_prefix, prefix)
+          def prefixed_name(prefix, name_prefix)
             [name_prefix, prefix]
           end
       end

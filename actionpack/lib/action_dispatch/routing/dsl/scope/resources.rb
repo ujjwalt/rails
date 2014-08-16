@@ -1,5 +1,4 @@
 require "action_dispatch/routing/dsl/resource"
-require "action_dispatch/routing/dsl/singleton_resource"
 
 # Resource routing allows you to quickly declare all of the common routes
 # for a given resourceful controller. Instead of declaring separate routes

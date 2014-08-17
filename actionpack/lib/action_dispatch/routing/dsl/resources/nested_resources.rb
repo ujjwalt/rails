@@ -22,7 +22,7 @@ module ActionDispatch
           end
 
           def nested_scope
-            "#{path}/:#{nested_param}"
+            "#{@path}/:#{nested_param}"
           end
 
           def nested_options #:nodoc:

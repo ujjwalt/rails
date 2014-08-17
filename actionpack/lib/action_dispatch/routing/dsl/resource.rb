@@ -63,7 +63,10 @@ module ActionDispatch
           { :controller => controller }
         end
 
-        alias :collection_scope :path
+        # alias :collection_scope :path
+        def collection_scope
+          @path
+        end
 
         def member_scope
           "#{@path}/:#{param}"
@@ -105,7 +108,7 @@ module ActionDispatch
         end
 
         def prefixed_name(prefix, name_prefix)
-          name_prefix = @parent.member_name if @parent.is_a?(Resource)
+          name_prefix = @parent.prefix if @parent.is_a?(Resource)
 
           case @level
           when :collection
@@ -179,6 +182,14 @@ module ActionDispatch
           yield
           @path = old_path
           @level = nil
+        end
+
+        def prefix
+          if @parent.is_a?(Resource)
+            merge_with_underscore(@parent.member_name, member_name)
+          else
+            member_name
+          end
         end
       end
     end

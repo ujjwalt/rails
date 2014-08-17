@@ -8,14 +8,6 @@ module ActionDispatch
       	include AbstractScope
         include Redirection
 
-        def method_missing(method, *args)
-          @count ||= 0
-          @count += 1
-          msg = "#{@count}) Missing :#{method}"
-          divider = "="*msg.length
-          puts divider, msg, divider
-        end
-
         def default_url_options=(options)
           @set.default_url_options = options
         end

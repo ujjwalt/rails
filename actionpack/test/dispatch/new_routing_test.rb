@@ -486,6 +486,101 @@ class TestRoutingMapper < ActionDispatch::IntegrationTest
     assert_equal '/projects/1/edit', edit_project_path(:id => '1')
   end
 
+  def test_projects_with_post_action_and_new_path_on_collection
+    draw do
+      resources :projects, :controller => :project do
+        post 'new', :action => 'new', :on => :collection, :as => :new
+      end
+    end
+
+    post '/projects/new'
+    assert_equal "project#new", @response.body
+    assert_equal "/projects/new", new_projects_path
+  end
+
+  def test_projects_involvements
+    draw do
+      resources :projects, :controller => :project do
+        resources :involvements, :attachments
+      end
+    end
+
+    get '/projects/1/involvements'
+    assert_equal 'involvements#index', @response.body
+    assert_equal '/projects/1/involvements', project_involvements_path(:project_id => '1')
+
+    get '/projects/1/involvements/new'
+    assert_equal 'involvements#new', @response.body
+    assert_equal '/projects/1/involvements/new', new_project_involvement_path(:project_id => '1')
+
+    get '/projects/1/involvements/1'
+    assert_equal 'involvements#show', @response.body
+    assert_equal '/projects/1/involvements/1', project_involvement_path(:project_id => '1', :id => '1')
+
+    put '/projects/1/involvements/1'
+    assert_equal 'involvements#update', @response.body
+
+    delete '/projects/1/involvements/1'
+    assert_equal 'involvements#destroy', @response.body
+
+    get '/projects/1/involvements/1/edit'
+    assert_equal 'involvements#edit', @response.body
+    assert_equal '/projects/1/involvements/1/edit', edit_project_involvement_path(:project_id => '1', :id => '1')
+  end
+
+  def test_projects_attachments
+    draw do
+      resources :projects, :controller => :project do
+        resources :involvements, :attachments
+      end
+    end
+
+    get '/projects/1/attachments'
+    assert_equal 'attachments#index', @response.body
+    assert_equal '/projects/1/attachments', project_attachments_path(:project_id => '1')
+  end
+
+  def test_projects_participants
+    draw do
+      resources :projects, :controller => :project do
+        resources :participants do
+          put :update_all, :on => :collection
+        end
+      end
+    end
+
+    get '/projects/1/participants'
+    assert_equal 'participants#index', @response.body
+    assert_equal '/projects/1/participants', project_participants_path(:project_id => '1')
+
+    put '/projects/1/participants/update_all'
+    assert_equal 'participants#update_all', @response.body
+    assert_equal '/projects/1/participants/update_all', update_all_project_participants_path(:project_id => '1')
+  end
+
+  def test_projects_companies
+    draw do
+      resources :projects, :controller => :project do
+        resources :companies do
+          resources :people
+          resource  :avatar, :controller => :avatar
+        end
+      end
+    end
+
+    get '/projects/1/companies'
+    assert_equal 'companies#index', @response.body
+    assert_equal '/projects/1/companies', project_companies_path(:project_id => '1')
+
+    get '/projects/1/companies/1/people'
+    assert_equal 'people#index', @response.body
+    assert_equal '/projects/1/companies/1/people', project_company_people_path(:project_id => '1', :company_id => '1')
+
+    get '/projects/1/companies/1/avatar'
+    assert_equal 'avatar#show', @response.body
+    assert_equal '/projects/1/companies/1/avatar', project_company_avatar_path(:project_id => '1', :company_id => '1')
+  end
+
   private
 
   def draw(&block)

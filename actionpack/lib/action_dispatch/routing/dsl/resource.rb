@@ -21,6 +21,8 @@ module ActionDispatch
           @controller ||= @name
           @param      = (options[:param] || :id).to_sym
           @shallow    = false
+
+          @level = nil
         end
 
         def default_actions
@@ -90,7 +92,7 @@ module ActionDispatch
         end
 
         def prefix_name_for_action(as, action) #:nodoc:
-          if canonical_action?(action, @level)
+          if !as && canonical_action?(action, @level)
             nil
           else
             super
@@ -115,7 +117,7 @@ module ActionDispatch
           when :root
             [name_prefix, collection_name, prefix]
           else
-            [name_prefix, member_name, prefix]
+            [prefix, name_prefix, member_name]
           end
         end
 

@@ -12,6 +12,10 @@ module ActionDispatch
           nested { super }
         end
 
+        def resource(*resources)
+          nested { super }
+        end
+
         protected
           def nested_param
             :"#{singular}_#{param}"

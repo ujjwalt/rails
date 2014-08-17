@@ -85,9 +85,8 @@ module ActionDispatch
           def name_for_action(as, action) #:nodoc:
             prefix = prefix_name_for_action(as, action)
             prefix = self.class.normalize_name(prefix) if prefix
-            name_prefix = self.as
 
-            name = prefixed_name(prefix, name_prefix)
+            name = prefixed_name(prefix)
 
             if candidate = name.select(&:present?).join("_").presence
               # If a name was not explicitly given, we check if it is valid
@@ -101,8 +100,8 @@ module ActionDispatch
             end
           end
 
-          def prefixed_name(prefix, name_prefix)
-            [name_prefix, prefix]
+          def prefixed_name(prefix)
+            [self.as, prefix]
           end
       end
     end

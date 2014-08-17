@@ -15,9 +15,10 @@ module ActionDispatch
         attr_reader :param
 
         def initialize(parent, resource, options)
-          super
+          super(parent, options)
           # Set resource specific ivars
           @name = resource.to_s
+          @path ||= @name
           @controller ||= @name
           @param      = (options[:param] || :id).to_sym
           @shallow    = false
@@ -106,8 +107,8 @@ module ActionDispatch
           super
         end
 
-        def prefixed_name(prefix, name_prefix)
-          name_prefix = @parent.prefix if nested?
+        def prefixed_name(prefix)
+          name_prefix = @parent.as
 
           case @level
           when :collection
@@ -183,11 +184,14 @@ module ActionDispatch
           @level = nil
         end
 
-        def prefix
-          if nested?
-            merge_with_underscore(@parent.prefix, member_name)
+        def as
+          if @as
+            super
           else
-            member_name
+            old_as, @as = @as, member_name
+            as = super
+            @as = old_as
+            as
           end
         end
       end

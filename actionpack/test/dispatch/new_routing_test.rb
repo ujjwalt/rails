@@ -682,6 +682,287 @@ class TestRoutingMapper < ActionDispatch::IntegrationTest
     assert_equal '/projects/info_about_correlation_indexes', correlation_indexes_projects_path
   end
 
+  def test_projects_posts
+    draw do
+      resources :projects do
+        resources :posts do
+          get  :archive, :toggle_view, :on => :collection
+          post :preview, :on => :member
+
+          resource :subscription
+
+          resources :comments do
+            post :preview, :on => :collection
+          end
+        end
+      end
+    end
+
+    get '/projects/1/posts'
+    assert_equal 'posts#index', @response.body
+    assert_equal '/projects/1/posts', project_posts_path(:project_id => '1')
+
+    get '/projects/1/posts/archive'
+    assert_equal 'posts#archive', @response.body
+    assert_equal '/projects/1/posts/archive', archive_project_posts_path(:project_id => '1')
+
+    get '/projects/1/posts/toggle_view'
+    assert_equal 'posts#toggle_view', @response.body
+    assert_equal '/projects/1/posts/toggle_view', toggle_view_project_posts_path(:project_id => '1')
+
+    post '/projects/1/posts/1/preview'
+    assert_equal 'posts#preview', @response.body
+    assert_equal '/projects/1/posts/1/preview', preview_project_post_path(:project_id => '1', :id => '1')
+
+    get '/projects/1/posts/1/subscription'
+    assert_equal 'subscriptions#show', @response.body
+    assert_equal '/projects/1/posts/1/subscription', project_post_subscription_path(:project_id => '1', :post_id => '1')
+
+    get '/projects/1/posts/1/comments'
+    assert_equal 'comments#index', @response.body
+    assert_equal '/projects/1/posts/1/comments', project_post_comments_path(:project_id => '1', :post_id => '1')
+
+    post '/projects/1/posts/1/comments/preview'
+    assert_equal 'comments#preview', @response.body
+    assert_equal '/projects/1/posts/1/comments/preview', preview_project_post_comments_path(:project_id => '1', :post_id => '1')
+  end
+
+  def test_replies
+    draw do
+      resources :replies do
+        member do
+          put :answer, :action => :mark_as_answer
+          delete :answer, :action => :unmark_as_answer
+        end
+      end
+    end
+
+    put '/replies/1/answer'
+    assert_equal 'replies#mark_as_answer', @response.body
+
+    delete '/replies/1/answer'
+    assert_equal 'replies#unmark_as_answer', @response.body
+  end
+
+  def test_resource_routes_with_only_and_except
+    draw do
+      resources :posts, :only => [:index, :show] do
+        resources :comments, :except => :destroy
+      end
+    end
+
+    get '/posts'
+    assert_equal 'posts#index', @response.body
+    assert_equal '/posts', posts_path
+
+    get '/posts/1'
+    assert_equal 'posts#show', @response.body
+    assert_equal '/posts/1', post_path(:id => 1)
+
+    get '/posts/1/comments'
+    assert_equal 'comments#index', @response.body
+    assert_equal '/posts/1/comments', post_comments_path(:post_id => 1)
+
+    post '/posts'
+    assert_equal 'pass', @response.headers['X-Cascade']
+    put '/posts/1'
+    assert_equal 'pass', @response.headers['X-Cascade']
+    delete '/posts/1'
+    assert_equal 'pass', @response.headers['X-Cascade']
+    delete '/posts/1/comments'
+    assert_equal 'pass', @response.headers['X-Cascade']
+  end
+
+  def test_resource_routes_only_create_update_destroy
+    draw do
+      resource  :past, :only => :destroy
+      resource  :present, :only => :update
+      resource  :future, :only => :create
+    end
+
+    delete '/past'
+    assert_equal 'pasts#destroy', @response.body
+    assert_equal '/past', past_path
+
+    patch '/present'
+    assert_equal 'presents#update', @response.body
+    assert_equal '/present', present_path
+
+    put '/present'
+    assert_equal 'presents#update', @response.body
+    assert_equal '/present', present_path
+
+    post '/future'
+    assert_equal 'futures#create', @response.body
+    assert_equal '/future', future_path
+  end
+
+  def test_resources_routes_only_create_update_destroy
+    draw do
+      resources :relationships, :only => [:create, :destroy]
+      resources :friendships,   :only => [:update]
+    end
+
+    post '/relationships'
+    assert_equal 'relationships#create', @response.body
+    assert_equal '/relationships', relationships_path
+
+    delete '/relationships/1'
+    assert_equal 'relationships#destroy', @response.body
+    assert_equal '/relationships/1', relationship_path(1)
+
+    patch '/friendships/1'
+    assert_equal 'friendships#update', @response.body
+    assert_equal '/friendships/1', friendship_path(1)
+
+    put '/friendships/1'
+    assert_equal 'friendships#update', @response.body
+    assert_equal '/friendships/1', friendship_path(1)
+  end
+
+  def test_resource_with_slugs_in_ids
+    draw do
+      resources :posts
+    end
+
+    get '/posts/rails-rocks'
+    assert_equal 'posts#show', @response.body
+    assert_equal '/posts/rails-rocks', post_path(:id => 'rails-rocks')
+  end
+
+  def test_resources_for_uncountable_names
+    draw do
+      resources :sheep do
+        get "_it", :on => :member
+      end
+    end
+
+    assert_equal '/sheep', sheep_index_path
+    assert_equal '/sheep/1', sheep_path(1)
+    assert_equal '/sheep/new', new_sheep_path
+    assert_equal '/sheep/1/edit', edit_sheep_path(1)
+    assert_equal '/sheep/1/_it', _it_sheep_path(1)
+  end
+
+  def test_resource_does_not_modify_passed_options
+    options = {:id => /.+?/, :format => /json|xml/}
+    draw { resource :user, options }
+    assert_equal({:id => /.+?/, :format => /json|xml/}, options)
+  end
+
+  def test_resources_does_not_modify_passed_options
+    options = {:id => /.+?/, :format => /json|xml/}
+    draw { resources :users, options }
+    assert_equal({:id => /.+?/, :format => /json|xml/}, options)
+  end
+
+  def test_path_names
+    draw do
+      scope 'pt', :as => 'pt' do
+        resources :projects, :path_names => { :edit => 'editar', :new => 'novo' }, :path => 'projetos'
+        resource  :admin, :path_names => { :new => 'novo', :activate => 'ativar' }, :path => 'administrador' do
+          put :activate, :on => :member
+        end
+      end
+    end
+
+    get '/pt/projetos'
+    assert_equal 'projects#index', @response.body
+    assert_equal '/pt/projetos', pt_projects_path
+
+    get '/pt/projetos/1/editar'
+    assert_equal 'projects#edit', @response.body
+    assert_equal '/pt/projetos/1/editar', edit_pt_project_path(1)
+
+    get '/pt/administrador'
+    assert_equal 'admins#show', @response.body
+    assert_equal '/pt/administrador', pt_admin_path
+
+    get '/pt/administrador/novo'
+    assert_equal 'admins#new', @response.body
+    assert_equal '/pt/administrador/novo', new_pt_admin_path
+
+    put '/pt/administrador/ativar'
+    assert_equal 'admins#activate', @response.body
+    assert_equal '/pt/administrador/ativar', activate_pt_admin_path
+  end
+
+  def test_path_option_override
+    draw do
+      scope 'pt', :as => 'pt' do
+        resources :projects, :path_names => { :new => 'novo' }, :path => 'projetos' do
+          put :close, :on => :member, :path => 'fechar'
+          get :open, :on => :new, :path => 'abrir'
+        end
+      end
+    end
+
+    get '/pt/projetos/novo/abrir'
+    assert_equal 'projects#open', @response.body
+    assert_equal '/pt/projetos/novo/abrir', open_new_pt_project_path
+
+    put '/pt/projetos/1/fechar'
+    assert_equal 'projects#close', @response.body
+    assert_equal '/pt/projetos/1/fechar', close_pt_project_path(1)
+  end
+
+  def test_sprockets
+    draw do
+      get 'sprockets.js' => ::TestRoutingMapper::SprocketsApp
+    end
+
+    get '/sprockets.js'
+    assert_equal 'javascripts', @response.body
+  end
+
+  def test_update_person_route
+    draw do
+      get 'people/:id/update', :to => 'people#update', :as => :update_person
+    end
+
+    get '/people/1/update'
+    assert_equal 'people#update', @response.body
+
+    assert_equal '/people/1/update', update_person_path(:id => 1)
+  end
+
+  def test_update_project_person
+    draw do
+      get '/projects/:project_id/people/:id/update', :to => 'people#update', :as => :update_project_person
+    end
+
+    get '/projects/1/people/2/update'
+    assert_equal 'people#update', @response.body
+
+    assert_equal '/projects/1/people/2/update', update_project_person_path(:project_id => 1, :id => 2)
+  end
+
+  def test_forum_products
+    draw do
+      namespace :forum do
+        resources :products, :path => '' do
+          resources :questions
+        end
+      end
+    end
+
+    get '/forum'
+    assert_equal 'forum/products#index', @response.body
+    assert_equal '/forum', forum_products_path
+
+    get '/forum/basecamp'
+    assert_equal 'forum/products#show', @response.body
+    assert_equal '/forum/basecamp', forum_product_path(:id => 'basecamp')
+
+    get '/forum/basecamp/questions'
+    assert_equal 'forum/questions#index', @response.body
+    assert_equal '/forum/basecamp/questions', forum_product_questions_path(:product_id => 'basecamp')
+
+    get '/forum/basecamp/questions/1'
+    assert_equal 'forum/questions#show', @response.body
+    assert_equal '/forum/basecamp/questions/1', forum_product_question_path(:product_id => 'basecamp', :id => 1)
+  end
+
   private
 
   def draw(&block)

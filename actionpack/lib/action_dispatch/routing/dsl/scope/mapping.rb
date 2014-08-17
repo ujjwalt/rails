@@ -73,7 +73,7 @@ module ActionDispatch
         @to                 = options.delete :to
         @default_controller = options.delete(:controller) || scope.controller
         @default_action     = options.delete(:action) || scope.action
-        @as                 = options.delete(:as) || scope.as
+        @as                 = options.delete :as
         @anchor             = options.delete :anchor
         @set                = scope.set
 

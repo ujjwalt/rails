@@ -581,6 +581,28 @@ class TestRoutingMapper < ActionDispatch::IntegrationTest
     assert_equal '/projects/1/companies/1/avatar', project_company_avatar_path(:project_id => '1', :company_id => '1')
   end
 
+  def test_project_manager
+    draw do
+      resources :projects do
+        resource :manager, :as => :super_manager do
+          post :fire
+        end
+      end
+    end
+
+    get '/projects/1/manager'
+    assert_equal 'managers#show', @response.body
+    assert_equal '/projects/1/manager', project_super_manager_path(:project_id => '1')
+
+    get '/projects/1/manager/new'
+    assert_equal 'managers#new', @response.body
+    assert_equal '/projects/1/manager/new', new_project_super_manager_path(:project_id => '1')
+
+    post '/projects/1/manager/fire'
+    assert_equal 'managers#fire', @response.body
+    assert_equal '/projects/1/manager/fire', fire_project_super_manager_path(:project_id => '1')
+  end
+
   private
 
   def draw(&block)

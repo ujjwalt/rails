@@ -63,7 +63,6 @@ module ActionDispatch
           { :controller => controller }
         end
 
-        # alias :collection_scope :path
         def collection_scope
           @path
         end

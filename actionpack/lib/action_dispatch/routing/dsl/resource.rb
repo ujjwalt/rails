@@ -107,7 +107,7 @@ module ActionDispatch
         end
 
         def prefixed_name(prefix, name_prefix)
-          name_prefix = @parent.prefix if @parent.is_a?(Resource)
+          name_prefix = @parent.prefix if nested?
 
           case @level
           when :collection
@@ -184,8 +184,8 @@ module ActionDispatch
         end
 
         def prefix
-          if @parent.is_a?(Resource)
-            merge_with_underscore(@parent.member_name, member_name)
+          if nested?
+            merge_with_underscore(@parent.prefix, member_name)
           else
             member_name
           end

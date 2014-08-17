@@ -205,6 +205,14 @@ module ActionDispatch
           common_behaviour_for SingletonResource, *resources, &block
         end
 
+        def prefix
+          @parent.prefix if @parent
+        end
+
+        def resources_path_names(options)
+          @path_names.merge!(options)
+        end
+
         private
           def common_behaviour_for(klass, *resources, &block)
             options = resources.extract_options!.dup

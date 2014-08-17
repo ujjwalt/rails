@@ -603,6 +603,85 @@ class TestRoutingMapper < ActionDispatch::IntegrationTest
     assert_equal '/projects/1/manager/fire', fire_project_super_manager_path(:project_id => '1')
   end
 
+  def test_project_images
+    draw do
+      resources :projects do
+        resources :images, :as => :funny_images do
+          post :revise, :on => :member
+        end
+      end
+    end
+
+    get '/projects/1/images'
+    assert_equal 'images#index', @response.body
+    assert_equal '/projects/1/images', project_funny_images_path(:project_id => '1')
+
+    get '/projects/1/images/new'
+    assert_equal 'images#new', @response.body
+    assert_equal '/projects/1/images/new', new_project_funny_image_path(:project_id => '1')
+
+    post '/projects/1/images/1/revise'
+    assert_equal 'images#revise', @response.body
+    assert_equal '/projects/1/images/1/revise', revise_project_funny_image_path(:project_id => '1', :id => '1')
+  end
+
+  def test_projects_people
+    draw do
+      resources :projects do
+        resources :people do
+          nested do
+            scope "/:access_token" do
+              resource :avatar
+            end
+          end
+
+          member do
+            put  :accessible_projects
+            post :resend, :generate_new_password
+          end
+        end
+      end
+    end
+
+    get '/projects/1/people'
+    assert_equal 'people#index', @response.body
+    assert_equal '/projects/1/people', project_people_path(:project_id => '1')
+
+    get '/projects/1/people/1'
+    assert_equal 'people#show', @response.body
+    assert_equal '/projects/1/people/1', project_person_path(:project_id => '1', :id => '1')
+
+    get '/projects/1/people/1/7a2dec8/avatar'
+    assert_equal 'avatars#show', @response.body
+    assert_equal '/projects/1/people/1/7a2dec8/avatar', project_person_avatar_path(:project_id => '1', :person_id => '1', :access_token => '7a2dec8')
+
+    put '/projects/1/people/1/accessible_projects'
+    assert_equal 'people#accessible_projects', @response.body
+    assert_equal '/projects/1/people/1/accessible_projects', accessible_projects_project_person_path(:project_id => '1', :id => '1')
+
+    post '/projects/1/people/1/resend'
+    assert_equal 'people#resend', @response.body
+    assert_equal '/projects/1/people/1/resend', resend_project_person_path(:project_id => '1', :id => '1')
+
+    post '/projects/1/people/1/generate_new_password'
+    assert_equal 'people#generate_new_password', @response.body
+    assert_equal '/projects/1/people/1/generate_new_password', generate_new_password_project_person_path(:project_id => '1', :id => '1')
+  end
+
+  def test_projects_with_resources_path_names
+    draw do
+      resources_path_names :correlation_indexes => "info_about_correlation_indexes"
+
+      resources :projects do
+        get :correlation_indexes, :on => :collection
+      end
+    end
+
+    get '/projects/info_about_correlation_indexes'
+    assert_equal 'projects#correlation_indexes', @response.body
+    assert_equal '/projects/info_about_correlation_indexes', correlation_indexes_projects_path
+  end
+
   private
 
   def draw(&block)

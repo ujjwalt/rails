@@ -41,6 +41,12 @@ module ActionDispatch
           def param_constraint #:nodoc:
             constraints[param]
           end
+
+          def nested?
+            return false unless @parent
+            return true if self.is_a?(Resource)
+            @nested ||= @parent.nested?
+          end
       end
     end
   end

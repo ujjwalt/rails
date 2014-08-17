@@ -1,3 +1,5 @@
+require "action_dispatch/routing/dsl/resources/nested_resources"
+
 module ActionDispatch
   module Routing
     module DSL
@@ -62,21 +64,13 @@ module ActionDispatch
         alias :collection_scope :path
 
         def member_scope
-          "#{path}/:#{param}"
+          "#{@path}/:#{param}"
         end
 
         alias :shallow_scope :member_scope
 
         def new_scope(new_path)
-          "#{path}/#{new_path}"
-        end
-
-        def nested_param
-          :"#{singular}_#{param}"
-        end
-
-        def nested_scope
-          "#{path}/:#{nested_param}"
+          "#{@path}/#{new_path}"
         end
 
         def shallow=(value)
@@ -109,9 +103,9 @@ module ActionDispatch
         end
 
         def prefixed_name(prefix, name_prefix)
+          name_prefix = @parent.member_name if @parent.is_a?(Resource)
+
           case @level
-          when :nested
-            [name_prefix, prefix]
           when :collection
             [prefix, name_prefix, collection_name]
           when :new
@@ -130,6 +124,14 @@ module ActionDispatch
             raise ArgumentError, "Unknown scope #{on.inspect} given to :on"
           end
           super
+        end
+
+        def decomposed_match(path, options) # :nodoc:
+          if on = options.delete(:on)
+            send(on) { super }
+          else
+            super
+          end
         end
 
 ############################################################################################

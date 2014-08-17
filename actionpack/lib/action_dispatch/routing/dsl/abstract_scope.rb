@@ -112,7 +112,15 @@ module ActionDispatch
           end
 
           def merge_with_underscore(parent, child)
-            parent ? "#{parent}_#{child}" : child
+            if parent.present?
+              if child.present?
+                "#{parent}_#{child}"
+              else
+                parent
+              end
+            else
+              child
+            end
           end
 
           def merge_hashes(parent, child)

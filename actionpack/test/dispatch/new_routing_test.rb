@@ -967,19 +967,19 @@ class TestRoutingMapper < ActionDispatch::IntegrationTest
 
   def draw(&block)
     self.class.stub_controllers do |routes|
-      @app = routes
-      @app.default_url_options = { host: 'www.example.com' }
-      @app.draw(&block)
+      routes.default_url_options = { host: 'www.example.com' }
+      routes.draw(&block)
+      @app = RoutedRackApp.new routes
     end
   end
 
   def url_for(options = {})
-    @app.url_helpers.url_for(options)
+    @app.routes.url_helpers.url_for(options)
   end
 
   def method_missing(method, *args, &block)
     if method.to_s =~ /_(path|url)$/
-      @app.url_helpers.send(method, *args, &block)
+      @app.routes.url_helpers.send(method, *args, &block)
     else
       super
     end
